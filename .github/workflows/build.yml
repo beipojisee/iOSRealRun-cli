@@ -37,7 +37,7 @@ jobs:
         uses: Nuitka/Nuitka-Action@main
         with:
           # 【修改点2】确保使用 stable 稳定版，防止参数冲突
-          nuitka-version: stable
+          nuitka-version: main
           script-name: main.py
           onefile: true
 
