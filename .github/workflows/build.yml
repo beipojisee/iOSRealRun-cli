@@ -1,4 +1,4 @@
-name: Build
+name: Build Windows Only
 
 on:
   push:
@@ -10,11 +10,9 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest, macos-latest]
+        # 【修改点1】只保留 Windows 环境，移除 Ubuntu 和 MacOS
+        os: [windows-latest]
         arch: [x64]
-        include:
-          - os: macos-latest
-            arch: arm64
 
     runs-on: ${{ matrix.os }}
 
@@ -38,12 +36,13 @@ jobs:
       - name: Build Executable
         uses: Nuitka/Nuitka-Action@main
         with:
+          # 【修改点2】确保使用 stable 稳定版，防止参数冲突
           nuitka-version: stable
           script-name: main.py
           onefile: true
 
+      # 【修改点3】移除了所有 Linux 和 macOS 的 Copy 步骤，只保留 Windows
       - name: Copy Files (Windows)
-        if: matrix.os == 'windows-latest'
         run: |
           mkdir output
           mkdir output/libimobiledevice
@@ -53,32 +52,9 @@ jobs:
           cp -r DeveloperDiskImage output/
           cp -r libimobiledevice/win output/libimobiledevice
         
-      - name: Copy Files (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          mkdir output
-          mkdir output/libimobiledevice
-          cp build/*.bin output/
-          cp config.yaml output/
-          cp *route.txt output/
-          cp -r DeveloperDiskImage output/
-          cp -r libimobiledevice/linux output/libimobiledevice
-      
-      - name: Copy Files (macOS)
-        if: matrix.os == 'macos-latest'
-        run: |
-          mkdir output
-          mkdir output/libimobiledevice
-          cp build/*.bin output/
-          cp config.yaml output/
-          cp *route.txt output/
-          cp main.command output/
-          cp -r DeveloperDiskImage output/
-          cp -r libimobiledevice/darwin output/libimobiledevice
-
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: iOSRealRun-cli-${{ runner.os }}-${{ matrix.arch }}
+          name: iOSRealRun-cli-Windows-${{ matrix.arch }}
           path: |
             output/
